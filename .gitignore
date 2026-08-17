@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.ruff_cache/
 .venv/
 venv/
 *.egg-info/
@@ -29,5 +30,6 @@ task.txt
 # IDE
 .vscode/
 .idea/
+
 # Легаси-заметка (мусор от DeepSeek-чата, ссылки на несуществующие скрипты)
 Команда для запуска.txt

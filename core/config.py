@@ -79,8 +79,10 @@ class PipelineConfig:
             buffer_file=resolve(get("paths", "buffer_file", "buffer_py_in.txt")),
             task_file=resolve(get("paths", "task_file", "task.txt")),
             history_dir=resolve(get("paths", "history_dir", "history")),
-            prompt_file=resolve(get("paths", "prompt_file", "promt.md")),
-            prompt_py_file=resolve(get("paths", "prompt_py_file", "promt_py.md")),
+            prompt_file=resolve(get("paths", "prompt_file", "resources/promt.md")),
+            prompt_py_file=resolve(
+                get("paths", "prompt_py_file", "resources/promt_py.md")
+            ),
             ai_config=resolve(get("paths", "ai_config", "ai_config.ini")),
         )
 

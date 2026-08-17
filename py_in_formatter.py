@@ -63,7 +63,7 @@ def generate_py_in(
     with open(output_path, "w", encoding="utf-8") as f:
         # Заголовок
         f.write("=" * 60 + "\n")
-        f.write(f"AUTO-GENERATED FILE FROM formatter\n")
+        f.write("AUTO-GENERATED FILE FROM formatter\n")
         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write("=" * 60 + "\n\n")
 
@@ -106,7 +106,7 @@ def generate_py_in(
                     f.write("\n")
                 f.write("```\n")
             else:
-                print(f"⚠️  Warning: No content for {file_path}")
+                print(f"[WARN]  Warning: No content for {file_path}")
                 # Проверяем, может быть файл с таким именем есть в contents под другим путем
                 found = False
                 file_name = Path(file_path).name
@@ -140,13 +140,13 @@ def generate_py_in(
 
 def main():
     print("=" * 60)
-    print("🔄 PY_IN FORMATTER")
+    print("[PROCESS] PY_IN FORMATTER")
     print("=" * 60)
 
     # Проверяем наличие py_in.txt
     input_path = Path(INPUT_FILE)
     if not input_path.exists():
-        print(f"❌ {INPUT_FILE} not found!")
+        print(f"[ERROR] {INPUT_FILE} not found!")
         print(f"\nPlease create {INPUT_FILE} with your changes description")
         sys.exit(1)
 
@@ -155,7 +155,7 @@ def main():
     # Создаем резервную копию в buffer_py_in.txt
     buffer_path = Path(BUFFER_FILE)
     shutil.copy2(input_path, buffer_path)
-    print(f"[✓] Backup created: {BUFFER_FILE}")
+    print(f"[[OK]] Backup created: {BUFFER_FILE}")
 
     # Парсим входной файл
     create_files, update_files, delete_files, file_contents = parse_input_file(
@@ -183,16 +183,16 @@ def main():
                 missing_content.append(file_path)
 
     if missing_content:
-        print("\n⚠️  Missing content for:")
+        print("\n[WARN]  Missing content for:")
         for f in missing_content:
             print(f"   - {f}")
 
     # Генерируем новый py_in.txt
     generate_py_in(INPUT_FILE, create_files, update_files, delete_files, file_contents)
 
-    print(f"\n✅ Updated: {INPUT_FILE}")
-    print(f"📦 Original saved in: {BUFFER_FILE}")
-    print(f"\nNext step: python py_in_updater.py <project_path>")
+    print(f"\n[OK] Updated: {INPUT_FILE}")
+    print(f"[FILE] Original saved in: {BUFFER_FILE}")
+    print("\nNext step: python py_in_updater.py <project_path>")
     print("=" * 60)
 
 

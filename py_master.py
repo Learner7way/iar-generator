@@ -14,8 +14,6 @@ import sys
 import subprocess
 from pathlib import Path
 from datetime import datetime
-import time
-import socket
 import shutil
 
 from core.config import default_config as cfg
@@ -29,7 +27,7 @@ def pause_if_needed():
     """Функция паузы, срабатывает только при наличии аргумента --pause"""
     if "--pause" in sys.argv:
         print("\n" + "=" * 60)
-        input("🔄 НАЖМИТЕ ENTER ДЛЯ ПРОДОЛЖЕНИЯ...")
+        input("[PROCESS] НАЖМИТЕ ENTER ДЛЯ ПРОДОЛЖЕНИЯ...")
         print("=" * 60)
 
 
@@ -38,7 +36,7 @@ def save_task_to_file(task_text):
     if not task_text.strip():
         return
 
-    print(f"\n[СОХРАНЕНИЕ ЗАДАЧИ В ФАЙЛ]")
+    print("\n[СОХРАНЕНИЕ ЗАДАЧИ В ФАЙЛ]")
     print("-" * 40)
 
     try:
@@ -52,12 +50,12 @@ def save_task_to_file(task_text):
 
 def save_py_out_history():
     """Сохраняет копию py_out.md в папку history с датой и временем"""
-    print(f"\n[СОХРАНЕНИЕ ИСТОРИИ py_out.md]")
+    print("\n[СОХРАНЕНИЕ ИСТОРИИ py_out.md]")
     print("-" * 40)
 
     py_out_path = cfg.output_file
     if not py_out_path.exists():
-        print(f"  [WARN] Файл py_out.md не найден")
+        print("  [WARN] Файл py_out.md не найден")
         return
 
     try:
@@ -128,22 +126,6 @@ def clean_output_files():
     return True
 
 
-def check_chrome_debug_port(port=9222, timeout=10):
-    """Проверяет доступность порта отладки Chrome"""
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex(("127.0.0.1", port))
-            sock.close()
-            if result == 0:
-                return True
-        except:
-            pass
-        time.sleep(1)
-    return False
-
-
 def run_script(script_name, args, step_num, step_desc, optional=False):
     """
     Запускает Python скрипт с переданными аргументами.
@@ -189,21 +171,21 @@ def run_script(script_name, args, step_num, step_desc, optional=False):
         else:
             print(f"\n[ERROR] ШАГ {step_num} завершился с ошибкой (код: {returncode})")
             if optional:
-                print(f"[WARN] Продолжаем выполнение (опциональный шаг)")
+                print("[WARN] Продолжаем выполнение (опциональный шаг)")
                 return True
             return False
 
     except Exception as e:
         print(f"\n[ERROR] Ошибка при выполнении ШАГА {step_num}: {e}")
         if optional:
-            print(f"[WARN] Продолжаем выполнение (опциональный шаг)")
+            print("[WARN] Продолжаем выполнение (опциональный шаг)")
             return True
         return False
 
 
 def add_task_to_py_out(task_text, py_out_path):
     """Добавляет текст задачи в py_out.md"""
-    print(f"\n[ДОБАВЛЕНИЕ ТЕКСТА ЗАДАЧИ]")
+    print("\n[ДОБАВЛЕНИЕ ТЕКСТА ЗАДАЧИ]")
     print("-" * 40)
 
     separator = "\n4. Структура проекта и код:"
@@ -270,35 +252,6 @@ def show_file_sizes():
                 print(f"  • {filename}: {size/1024/1024:.2f} МБ")
         else:
             print(f"  • {filename}: не найден")
-
-
-def fix_script_encoding(script_path):
-    """Создает временную версию скрипта без эмодзи"""
-    if not script_path.exists():
-        return script_path
-
-    try:
-        with open(script_path, "r", encoding="utf-8") as f:
-            content = f.read()
-
-        # Заменяем эмодзи на текстовые маркеры
-        content = content.replace("\U0001f504", "[PROCESS]")
-        content = content.replace("✅", "[OK]")
-        content = content.replace("❌", "[ERROR]")
-        content = content.replace("⚠️", "[WARN]")
-        content = content.replace("🔹", "[STEP]")
-        content = content.replace("📁", "[DIR]")
-        content = content.replace("📝", "[TEXT]")
-        content = content.replace("🔄", "[WAIT]")
-
-        # Создаем временный файл
-        temp_path = script_path.with_suffix(".tmp.py")
-        with open(temp_path, "w", encoding="utf-8") as f:
-            f.write(content)
-
-        return temp_path
-    except:
-        return script_path
 
 
 def main():
@@ -440,81 +393,46 @@ def main():
         sys.exit(1)
 
     # ШАГ 5: Запускаем ai/ask.py (запрос к LLM через бэкенд, Chrome не нужен)
-    temp_script = fix_script_encoding(script_ai_ask)
-
     success5 = run_script(
-        str(temp_script), [], 5, "Отправка вопроса в LLM и получение ответа"
+        str(script_ai_ask), [], 5, "Отправка вопроса в LLM и получение ответа"
     )
-
-    # Удаляем временный файл
-    if temp_script != script_ai_ask:
-        try:
-            temp_script.unlink()
-        except:
-            pass
 
     if not success5:
         print("\n[WARN] ШАГ 5 завершился с ошибкой, но продолжаем")
 
     # ШАГ 6: Запускаем py_in_formatter.py
     if script_formatter.exists():
-        # Создаем временную версию без эмодзи
-        temp_script = fix_script_encoding(script_formatter)
-
-        success6 = run_script(
-            str(temp_script), [], 6, "Форматирование ответа (упрощение)", optional=True
+        run_script(
+            str(script_formatter),
+            [],
+            6,
+            "Форматирование ответа (упрощение)",
+            optional=True,
         )
-
-        # Удаляем временный файл
-        if temp_script != script_formatter:
-            try:
-                temp_script.unlink()
-            except:
-                pass
     else:
         print("\n[ШАГ 6] Пропускаем (py_in_formatter.py не найден)")
 
     # ШАГ 7: Запускаем py_in_updater.py с путем к проекту
     if script_updater.exists():
-        # Создаем временную версию без эмодзи
-        temp_script = fix_script_encoding(script_updater)
-
-        success7 = run_script(
-            str(temp_script),
+        run_script(
+            str(script_updater),
             [project_path],
             7,
             "Выполнение действий по упрощенному ответу",
             optional=True,
         )
-
-        # Удаляем временный файл
-        if temp_script != script_updater:
-            try:
-                temp_script.unlink()
-            except:
-                pass
     else:
         print("\n[ШАГ 7] Пропускаем (py_in_updater.py не найден)")
 
     # ШАГ 8: Запускаем iar_generator/master.py с путем к проекту
     if script_iar_generator.exists():
-        # Создаем временную версию без эмодзи
-        temp_script = fix_script_encoding(script_iar_generator)
-
-        success8 = run_script(
-            str(temp_script),
+        run_script(
+            str(script_iar_generator),
             ["generate", project_path, "project"],
             8,
             "Замена проектных файлов IAR",
             optional=True,
         )
-
-        # Удаляем временный файл
-        if temp_script != script_iar_generator:
-            try:
-                temp_script.unlink()
-            except:
-                pass
     else:
         print("\n[ШАГ 8] Пропускаем (iar_generator/master.py не найден)")
 

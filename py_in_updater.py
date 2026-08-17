@@ -14,7 +14,6 @@
 Пример: python py_in_updater.py "C:\\Projects\\example"
 """
 
-import os
 import sys
 import re
 import subprocess
@@ -41,7 +40,7 @@ class VersionManager:
                 with open(self.version_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     return data.get("version", 1)
-            except:
+            except Exception:
                 return 1
         return 1
 
@@ -51,7 +50,7 @@ class VersionManager:
             with open(self.version_file, "w", encoding="utf-8") as f:
                 json.dump({"version": self.current_version}, f, indent=2)
             return True
-        except:
+        except Exception:
             return False
 
     def get_next_version(self):
@@ -106,7 +105,7 @@ def parse_py_in_file(file_path):
                 file_path = file_path.strip().strip("`").strip()
                 if file_path not in files_to_update:
                     files_to_update[file_path] = file_content.strip()
-                    print(f"   [📄] File to process: {file_path}")
+                    print(f"   [[DOC]] File to process: {file_path}")
 
     else:
         print("[*] Using flexible format detection")
@@ -139,7 +138,7 @@ def parse_py_in_file(file_path):
                 if content_match:
                     file_content = content_match.group(1).strip()
                     files_to_update[file_path] = file_content
-                    print(f"   [📄] File to process: {file_path}")
+                    print(f"   [[DOC]] File to process: {file_path}")
 
     # Ищем файлы в верхней части (create/update/delete)
     header_section = (
@@ -188,7 +187,7 @@ def parse_py_in_file(file_path):
 
                         if not found:
                             print(
-                                f"   [⚠️] File marked as created but not found in content: {file_path}"
+                                f"   [[WARN]] File marked as created but not found in content: {file_path}"
                             )
 
             elif pattern_type == "list_simple":
@@ -231,7 +230,7 @@ def parse_py_in_file(file_path):
                                     if f_path.strip().strip("`").strip() == file_path:
                                         files_to_update[file_path] = f_content.strip()
                                         print(
-                                            f"   [📄] Found content for listed file: {file_path}"
+                                            f"   [[DOC]] Found content for listed file: {file_path}"
                                         )
                                         found = True
                                         break
@@ -249,14 +248,14 @@ def parse_py_in_file(file_path):
                                             content_match.group(1).strip()
                                         )
                                         print(
-                                            f"   [📄] Found content for listed file: {file_path}"
+                                            f"   [[DOC]] Found content for listed file: {file_path}"
                                         )
                                         found = True
                                         break
 
                         if not found:
                             print(
-                                f"   [⚠️] File listed for update but no content found: {file_path}"
+                                f"   [[WARN]] File listed for update but no content found: {file_path}"
                             )
 
     # Удаляем дубликаты
@@ -289,7 +288,7 @@ def ensure_directory_exists(file_path):
     if not directory.exists():
         try:
             directory.mkdir(parents=True, exist_ok=True)
-            print(f"   [✓] Created directory: {directory}")
+            print(f"   [[OK]] Created directory: {directory}")
             return True
         except Exception as e:
             print(f"   [!] Error creating directory {directory}: {e}")
@@ -316,12 +315,12 @@ def check_git_repository(repo_path):
     """
     git_dir = repo_path / ".git"
     if not git_dir.exists():
-        print(f"\n⚠️  Directory is not a Git repository: {repo_path}")
+        print(f"\n[WARN]  Directory is not a Git repository: {repo_path}")
         response = input("   Initialize Git repository? (y/N): ")
         if response.lower() == "y":
             success, out, err = run_git_command(repo_path, ["git", "init"])
             if success:
-                print(f"   [✓] Git repository initialized")
+                print("   [[OK]] Git repository initialized")
                 return True
             else:
                 print(f"   [!] Error initializing Git: {err}")
@@ -366,7 +365,7 @@ def git_commit_changes(repo_path, message_prefix, version_info=None):
     )
 
     if success:
-        print(f"   [✓] Commit created: {commit_message}")
+        print(f"   [[OK]] Commit created: {commit_message}")
         # Получаем хеш коммита
         success, out, err = run_git_command(
             repo_path, ["git", "rev-parse", "--short", "HEAD"]
@@ -388,7 +387,7 @@ def delete_file(file_path, base_dir):
     print(f"\n[⌫] Deleting: {file_path}")
 
     if not full_path.exists():
-        print(f"   [i] File already doesn't exist, skipping")
+        print("   [i] File already doesn't exist, skipping")
         return True, "skipped"
 
     if not full_path.is_file():
@@ -398,7 +397,7 @@ def delete_file(file_path, base_dir):
             import shutil
 
             shutil.rmtree(full_path)
-            print(f"   [✓] Directory deleted: {full_path}")
+            print(f"   [[OK]] Directory deleted: {full_path}")
             return True, "deleted"
         except Exception as e:
             print(f"   [!] Error deleting directory: {e}")
@@ -407,15 +406,15 @@ def delete_file(file_path, base_dir):
     try:
         file_size = full_path.stat().st_size
         full_path.unlink()
-        print(f"   [✓] File deleted (size: {file_size} bytes)")
+        print(f"   [[OK]] File deleted (size: {file_size} bytes)")
 
         # Проверяем, нужно ли удалить пустую директорию
         parent_dir = full_path.parent
         if parent_dir.exists() and not any(parent_dir.iterdir()):
             try:
                 parent_dir.rmdir()
-                print(f"   [✓] Deleted empty directory: {parent_dir}")
-            except:
+                print(f"   [[OK]] Deleted empty directory: {parent_dir}")
+            except Exception:
                 pass
 
         return True, "deleted"
@@ -446,7 +445,7 @@ def update_file(file_path, new_content, base_dir):
         try:
             with open(full_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
-            print(f"   [✓] Created new file")
+            print("   [[OK]] Created new file")
             return True, "created"
         except Exception as e:
             print(f"   [!] Error creating file: {e}")
@@ -467,7 +466,7 @@ def update_file(file_path, new_content, base_dir):
     try:
         with open(full_path, "w", encoding="utf-8") as f:
             f.write(new_content)
-        print("   [✓] File updated")
+        print("   [[OK]] File updated")
         return True, "updated"
     except Exception as e:
         print(f"   [!] Error writing file: {e}")
@@ -522,7 +521,7 @@ def print_summary(results, base_dir, start_time, git_commits, version_info=None)
         elif status == "failed":
             delete_failed.append(file_path)
 
-    print(f"\n📊 Statistics:")
+    print("\n[DATA] Statistics:")
     print(f"   - New files created: {len(created)}")
     print(f"   - Files updated: {len(updated)}")
     print(f"   - Files deleted: {len(deleted)}")
@@ -532,46 +531,46 @@ def print_summary(results, base_dir, start_time, git_commits, version_info=None)
     print(f"   - Delete errors: {len(delete_failed)}")
 
     if git_commits:
-        print(f"\n🔧 Git operations:")
+        print("\n[FIX] Git operations:")
         if git_commits.get("before"):
             print(f"   - Commit before changes: {git_commits['before']}")
         if git_commits.get("after"):
             print(f"   - Commit after changes: {git_commits['after']}")
 
     if created:
-        print(f"\n🆕 Created files:")
+        print("\n🆕 Created files:")
         for f in created:
             print(f"   + {f}")
 
     if updated:
-        print(f"\n📝 Updated files:")
+        print("\n[NOTE] Updated files:")
         for f in updated:
-            print(f"   ✓ {f}")
+            print(f"   [OK] {f}")
 
     if deleted:
-        print(f"\n🗑️  Deleted files:")
+        print("\n[DEL]  Deleted files:")
         for f in deleted:
             print(f"   ⌫ {f}")
 
     if skipped:
-        print(f"\n⏭️  Skipped files (unchanged):")
+        print("\n⏭  Skipped files (unchanged):")
         for f in skipped:
             print(f"   = {f}")
 
     if delete_skipped:
-        print(f"\n⏭️  Delete skipped (already gone):")
+        print("\n⏭  Delete skipped (already gone):")
         for f in delete_skipped:
             print(f"   = {f}")
 
     if failed:
-        print(f"\n❌ Files with update errors:")
+        print("\n[ERROR] Files with update errors:")
         for f in failed:
-            print(f"   ✗ {f}")
+            print(f"   [ERROR] {f}")
 
     if delete_failed:
-        print(f"\n❌ Files with delete errors:")
+        print("\n[ERROR] Files with delete errors:")
         for f in delete_failed:
-            print(f"   ✗ {f}")
+            print(f"   [ERROR] {f}")
 
     print("=" * 60)
 
@@ -580,10 +579,10 @@ def confirm_plan(files_to_update, files_to_delete, base_dir, version_info):
     """
     Отображение плана и запрос подтверждения.
     """
-    print(f"\n📋 Operation plan:")
+    print("\n[LIST] Operation plan:")
 
     if files_to_update:
-        print(f"\n   📝 Files to update/create ({len(files_to_update)}):")
+        print(f"\n   [NOTE] Files to update/create ({len(files_to_update)}):")
         for file_path in sorted(files_to_update.keys()):
             full_path = base_dir / file_path
             if full_path.exists():
@@ -592,7 +591,7 @@ def confirm_plan(files_to_update, files_to_delete, base_dir, version_info):
                 print(f"      + {file_path} (will be created)")
 
     if files_to_delete:
-        print(f"\n   🗑️  Files to delete ({len(files_to_delete)}):")
+        print(f"\n   [DEL]  Files to delete ({len(files_to_delete)}):")
         for file_path in sorted(files_to_delete):
             full_path = base_dir / file_path
             if full_path.exists():
@@ -601,11 +600,11 @@ def confirm_plan(files_to_update, files_to_delete, base_dir, version_info):
                 print(f"      ⌫ {file_path} (already doesn't exist)")
 
     if version_info:
-        print(f"\n📌 Version information:")
+        print("\n[PIN] Version information:")
         print(f"   - Current version: {version_info['current']}")
         print(f"   - Next version: {version_info['next']}")
 
-    print("\n⚠️  Changes will be committed to Git with version increment")
+    print("\n[WARN]  Changes will be committed to Git with version increment")
     response = input("\nProceed with operations? (y/N): ")
 
     return response.lower() == "y"
@@ -620,14 +619,14 @@ def main():
     base_dir = Path(project_path).resolve()
 
     if not base_dir.exists():
-        print(f"❌ Base directory does not exist: {base_dir}")
+        print(f"[ERROR] Base directory does not exist: {base_dir}")
         response = input("Create directory? (y/N): ")
         if response.lower() == "y":
             try:
                 base_dir.mkdir(parents=True, exist_ok=True)
-                print(f"✅ Directory created: {base_dir}")
+                print(f"[OK] Directory created: {base_dir}")
             except Exception as e:
-                print(f"❌ Error creating directory: {e}")
+                print(f"[ERROR] Error creating directory: {e}")
                 sys.exit(1)
         else:
             sys.exit(1)
@@ -636,10 +635,10 @@ def main():
     py_in_path = cfg.answer_file
 
     print("=" * 60)
-    print("🔄 FILE UPDATER FROM py_in.txt (with Git versioning)")
+    print("[PROCESS] FILE UPDATER FROM py_in.txt (with Git versioning)")
     print("=" * 60)
-    print(f"📁 Project base directory: {base_dir}")
-    print(f"📄 Input file: {py_in_path}")
+    print(f"[DIR] Project base directory: {base_dir}")
+    print(f"[DOC] Input file: {py_in_path}")
 
     start_time = datetime.now()
     git_commits = {}
@@ -648,7 +647,7 @@ def main():
     # Проверяем Git репозиторий
     use_git = check_git_repository(base_dir)
     if not use_git:
-        print("\n⚠️  Continuing without Git")
+        print("\n[WARN]  Continuing without Git")
         response = input("Continue? (y/N): ")
         if response.lower() != "y":
             sys.exit(0)
@@ -681,7 +680,7 @@ def main():
 
     # Создаем коммит перед изменениями
     if use_git:
-        print(f"\n[Git] Creating pre-update commit...")
+        print("\n[Git] Creating pre-update commit...")
         success, commit_hash = git_commit_changes(
             base_dir,
             "Temporary version before update",
@@ -696,7 +695,7 @@ def main():
     # Сначала удаляем файлы
     if files_to_delete:
         print(f"\n{'='*60}")
-        print(f"🗑️  DELETING FILES")
+        print("[DEL]  DELETING FILES")
         print(f"{'='*60}")
 
         for file_path in files_to_delete:
@@ -706,7 +705,7 @@ def main():
     # Затем обновляем/создаем файлы
     if files_to_update:
         print(f"\n{'='*60}")
-        print(f"📝 UPDATING/CREATING FILES")
+        print("[NOTE] UPDATING/CREATING FILES")
         print(f"{'='*60}")
 
         for file_path, new_content in files_to_update.items():

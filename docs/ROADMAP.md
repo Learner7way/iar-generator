@@ -164,12 +164,20 @@ output/answer/formatted/buffer/task/history/prompt/ai_config). Подключё�
 и «Команда для запуска.txt» исключены из репозитория; `.gitignore` дополнен
 (`.ruff_cache`, `.env.*`).
 
-### Этап 7 — Чистый вывод без эмодзи
+### Этап 7 — Чистый вывод без эмодзи ✅
 - Убрать эмодзи из вывода всех скриптов (заменить на `[OK]/[WARN]/[ERROR]` — они уже есть в большинстве).
 - **Red:** тест-фикстура: вывод скрипта не содержит не-ASCII эмодзи.
 - **Green:** пройти по файлам, заменить эмодзи.
 - **Refactor:** удалить `fix_script_encoding()` из `py_master.py`.
 - **DoD:** хак с `.tmp.py` больше не нужен.
+
+**Итог (2026-08-17):** все эмодзи в Python-скриптах заменены на текстовые маркеры
+(`[OK]`, `[WARN]`, `[ERROR]`, `[DIR]`, `[FILE]` и т.д.). `fix_script_encoding()` и связанная
+обвязка `temp_script`/`.tmp.py` удалены из `py_master.py` (шаги 5–8 запускают скрипты
+напрямую). Удалены мёртвые Selenium-скрипты `pyAIqesion.py`, `start_chrome_debug.py`
+(заменены `ai/ask.py` на Этапе 3) и мёртвая функция `check_chrome_debug_port` с импортами
+`socket`/`time`. `py_in_updater.py`/`py_in_formatter.py`/`py_master.py` приведены к чистоте
+ruff (f-string, bare `except`, неиспользуемые переменные).
 
 ---
 

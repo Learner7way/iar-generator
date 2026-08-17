@@ -88,13 +88,18 @@ py_generator/
 
 Каждый этап — отдельный шаг, с тестами до кода. Запуск тестов: `pytest`.
 
-### Этап 1 — Каркас тестирования (TDD-фундамент)
+### Этап 1 — Каркас тестирования (TDD-фундамент) ✅
 - **Red:** написать тесты на `iar_generator/` (ядро — самый чистый модуль):
   генерация путей, нормализация `..\..\`, поиск файлов, форматирование XML.
 - **Green:** починить найденные баги минимальными правками.
 - **Refactor:** не трогать интерфейсы, только внутренности.
 - **Definition of Done:** `pytest` зелёный, coverage ≥60% на `iar_generator/`.
 - Создать `requirements.txt` (selenium, pyperclip, requests + dev: pytest, pytest-cov, pytest-mock, black, isort, mypy, ruff).
+
+**Итог (2026-08-17):** 57 тестов, coverage ядра 70% (config/template_loader/xml_formatter ~100%,
+iar_generator 98%, path_normalizer 98%, file_finder 82%). ruff/black чистые. Исправлен баг:
+`update_linker_scripts` не приводил путь к Windows-формату (добавлен `normalize_for_windows`).
+Созданы `requirements.txt`, `pytest.ini`, `tests/` (5 файлов).
 
 ### Этап 2 — Детектор кодировок и бинарных файлов
 - Вынести из `pyAIData.py` чтение файлов в модуль `utils/file_reader.py` (несколько кодировок, сигнатуры бинарности).

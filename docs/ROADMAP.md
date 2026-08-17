@@ -101,11 +101,18 @@ iar_generator 98%, path_normalizer 98%, file_finder 82%). ruff/black чисты�
 `update_linker_scripts` не приводил путь к Windows-формату (добавлен `normalize_for_windows`).
 Созданы `requirements.txt`, `pytest.ini`, `tests/` (5 файлов).
 
-### Этап 2 — Детектор кодировок и бинарных файлов
+### Этап 2 — Детектор кодировок и бинарных файлов ✅
 - Вынести из `pyAIData.py` чтение файлов в модуль `utils/file_reader.py` (несколько кодировок, сигнатуры бинарности).
 - **Red:** тесты: cp866/cp1251/utf-8, бинарный файл, ограничение размера.
 - **Green:** реализация. **Refactor:** подключить в `pyAIData.py` и `py_in_updater.py`.
 - **DoD:** `pyAIData.py` использует `utils/file_reader.py`, старые тесты зелёные.
+
+**Итог (2026-08-17):** создан `utils/file_reader.py` (16 тестов): `read_text` (порядок
+кодировок utf-8 → cp1251 → cp866 → koi8-r → windows-1251 → latin-1, лимит размера),
+`is_binary_file` (расширение + NUL-байты + сигнатуры JPEG/PNG/GIF/ZIP/PDF + UTF-8-проба).
+Подключён в `pyAIData.py` (вместо локальных `is_binary_file`/`read_file_content`)
+и в `py_in_updater.py` (сравнение существующего файла теперь читает cp866/cp1251,
+а не падает на UnicodeDecodeError). Всего тестов: 73.
 
 ### Этап 3 — AI-интеграция через API (вместо Selenium)
 - **Red:** тесты на клиент DeepSeek API (мок HTTP): отправка `py_out.md`, получение `py_in.txt`.

@@ -3,9 +3,12 @@
 import sys
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+
 # iar_generator/ использует плоские импорты (from config import ...),
 # поэтому директория пакета добавляется в sys.path.
-IAR_GENERATOR_DIR = Path(__file__).resolve().parents[1] / "iar_generator"
+IAR_GENERATOR_DIR = REPO_ROOT / "iar_generator"
 sys.path.insert(0, str(IAR_GENERATOR_DIR))
 
 import pytest  # noqa: E402

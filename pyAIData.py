@@ -8,6 +8,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from datetime import datetime
 
+from utils.file_reader import is_binary_file, read_text as read_file_content
+
 def parse_arguments():
     """Парсинг аргументов командной строки"""
     parser = argparse.ArgumentParser(
@@ -294,32 +296,6 @@ def print_tree(structure, indent="", output_lines=None, max_files=None):
                 output_lines.append(line)
     
     return output_lines
-
-def is_binary_file(file_path):
-    """Проверка, является ли файл бинарным по расширению"""
-    binary_extensions = {
-        '.exe', '.bin', '.hex', '.o', '.obj', '.lib', '.dll', '.so', 
-        '.pyc', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.ico', '.pdf',
-        '.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz', '.iso',
-        '.mp3', '.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv',
-        '.ttf', '.otf', '.woff', '.woff2', '.eot'
-    }
-    return file_path.suffix.lower() in binary_extensions
-
-def read_file_content(file_path):
-    """Чтение содержимого файла с попыткой разных кодировок"""
-    encodings = ['utf-8', 'cp1251', 'cp866', 'latin-1', 'koi8-r', 'windows-1251']
-    
-    for encoding in encodings:
-        try:
-            with open(file_path, 'r', encoding=encoding) as f:
-                return f.read(), encoding
-        except UnicodeDecodeError:
-            continue
-        except Exception as e:
-            return None, str(e)
-    
-    return None, "неподдерживаемая кодировка"
 
 def get_language_for_file(file_path):
     """Определение языка для подсветки синтаксиса по расширению"""

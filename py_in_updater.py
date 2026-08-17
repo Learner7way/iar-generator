@@ -22,6 +22,8 @@ from pathlib import Path
 from datetime import datetime
 import json
 
+from utils.file_reader import read_text
+
 class VersionManager:
     """Класс для управления версиями в Git репозитории."""
     
@@ -403,11 +405,9 @@ def update_file(file_path, new_content, base_dir):
             return False, 'failed'
     
     # Для существующих файлов проверяем изменения
-    try:
-        with open(full_path, 'r', encoding='utf-8') as f:
-            old_content = f.read()
-    except Exception as e:
-        print(f"   [!] Error reading file: {e}")
+    old_content, read_error = read_text(full_path)
+    if old_content is None:
+        print(f"   [!] Error reading file: {read_error}")
         return False, 'failed'
     
     # Если содержимое совпадает, пропускаем

@@ -9,12 +9,14 @@
 
 Команды:
   generate    - Генерация IAR файлов
+  template    - Генерация устанавливаемого шаблона IAR (GyroProject)
   info        - Информация о проекте
   check       - Проверка структуры проекта
   clean       - Очистка сгенерированных файлов
 
 Примеры:
   python master.py generate C:\\Projects\\example loop_example_project
+  python master.py template C:\\Projects\\example -o C:\\tmp\\template
   python master.py info C:\\Projects\\example
   python master.py check C:\\Projects\\example
   python master.py clean C:\\Projects\\example
@@ -31,6 +33,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from iar_generator import IARProjectGenerator
 from file_finder import FileFinder
 from config import IARConfig
+from template_generator import IARProjectTemplateGenerator
 
 
 def print_header(text):
@@ -58,6 +61,26 @@ def print_warning(text):
 def print_info(text):
     """Вывод информационного сообщения"""
     print(f"[INFO] {text}")
+
+
+def cmd_template(args):
+    """Команда генерации устанавливаемого шаблона IAR (GyroProject)."""
+    print_header(f"Генерация IAR Project Template: {args.project_path}")
+
+    try:
+        generator = IARProjectTemplateGenerator(
+            source_dir=args.project_path,
+            output_dir=args.output,
+        )
+        generator.generate()
+        print_success("Генерация шаблона завершена")
+        return 0
+    except Exception as e:
+        print_error(f"Ошибка генерации шаблона: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return 1
 
 
 def cmd_generate(args):
@@ -312,6 +335,17 @@ def main():
         "-o", "--output", help="Выходная директория для IAR файлов"
     )
 
+    # Команда template
+    parser_template = subparsers.add_parser(
+        "template", help="Генерация устанавливаемого шаблона IAR (GyroProject)"
+    )
+    parser_template.add_argument(
+        "project_path", help="Путь к исходной директории проекта"
+    )
+    parser_template.add_argument(
+        "-o", "--output", help="Выходная директория для шаблона"
+    )
+
     # Команда info
     parser_info = subparsers.add_parser("info", help="Информация о проекте")
     parser_info.add_argument("project_path", help="Путь к корневой директории проекта")
@@ -339,6 +373,8 @@ def main():
     # Выполнение команды
     if args.command == "generate":
         return cmd_generate(args)
+    elif args.command == "template":
+        return cmd_template(args)
     elif args.command == "info":
         return cmd_info(args)
     elif args.command == "check":

@@ -28,8 +28,7 @@
 | Сбор данных о проекте | `pyAIData.py`, `pyIAR_xmlValue.py` | ✅ работает |
 | AI-интеграция | `pyAIqesion.py`, `start_chrome_debug.py` | ⚠ хрупкая (Selenium, порт 9222, CSS-селекторы DeepSeek) |
 | Применение изменений | `py_in_updater.py` (694) | ✅ git-коммиты, `.version.json`, план с подтверждением |
-| Генерация IAR | `iar_generator/` (пакет, 1 533) | ✅ модульная, SRP, DI, type hints |
-| Автономные генераторы | `new.py` (2 027), `pyGenXMLforIAR.py` (630) | ⚠ дублируют `iar_generator/`, вне конвейера |
+| Генерация IAR | `iar_generator/` (пакет, 1 533) | ✅ модульная, SRP, DI, type hints; команды `generate`/`template`/`info`/`check`/`clean` |
 | Формат ответа AI | `py_in_formatter.py` | ✅ create/update/delete |
 | Стандарты кода | `promt.md` (C), `promt_py.md` (Python) | ✅ входные ТЗ для AI |
 | Тесты / CI | — | ❌ отсутствуют |
@@ -127,11 +126,17 @@ iar_generator 98%, path_normalizer 98%, file_finder 82%). ruff/black чисты�
 `py_master.py`: шаги 5–6 (Chrome + pyAIqesion) заменены одним шагом 5 (`ai/ask.py`).
 Selenium/pyperclip убраны из `requirements.txt`. Новых тестов: 13 (мок HTTP, фабрика, конфиг, ask).
 
-### Этап 4 — Убрать дубли генераторов IAR
+### Этап 4 — Убрать дубли генераторов IAR ✅
 - **Red:** тесты на `iar_generator/` уже есть (Этап 1) — зафиксировать полный набор функций генерации.
 - **Green:** перенести недостающие возможности из `new.py`/`pyGenXMLforIAR.py` в `iar_generator/` (по одной функции).
 - **Refactor:** удалить `new.py`, `pyGenXMLforIAR.py` после подтверждения тестами.
 - **DoD:** в проекте один генератор IAR — `iar_generator/`.
+
+**Итог (2026-08-17):** `pyGenXMLforIAR.py` перенесён в `iar_generator/template_generator.py`
+(класс `IARProjectTemplateGenerator`, чистый вывод без эмодзи, устойчивое создание каталогов)
+и подключён как команда `template` в `iar_generator/master.py`. `new.py` (2000 строк,
+монолитная генерация с нуля под STM32L412RB) удалён: эталоны `ewarm/` покрывают рабочий
+кейс конвейера; при необходимости — вернуть из git-истории. Новых тестов: 7. Итого 93.
 
 ### Этап 5 — Конфигурация читается кодом
 - **Red:** тесты на парсер `project_config.ini` (секции PROJECT/MCU/MODULES, `%ENV_VAR%`).

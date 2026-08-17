@@ -16,6 +16,13 @@ task.txt
 *.tmp.py
 *.backup_*
 
+# Секреты/конфиденциальное
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
 # IDE
 .vscode/
 .idea/

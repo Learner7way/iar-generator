@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Runtime-артефакты конвейера
+history/
+py_out.md
+py_in.txt
+py_in_simplified.txt
+buffer_py_in.txt
+task.txt
+*.tmp.py
+*.backup_*
+
+# IDE
+.vscode/
+.idea/
+# Легаси-заметка (мусор от DeepSeek-чата, ссылки на несуществующие скрипты)
+Команда для запуска.txt

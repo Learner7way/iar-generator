@@ -151,12 +151,18 @@ output/answer/formatted/buffer/task/history/prompt/ai_config). Подключё�
 `pyAIData.py`, `pyIAR_xmlValue.py`, `py_in_formatter.py`, `py_in_updater.py`, `ai/ask.py`.
 Хардкод путей к файлам конвейера убран из кода. Новых тестов: 9. Итого 102.
 
-### Этап 6 — Порядок в корне и документация
+### Этап 6 — Порядок в корне и документация ✅
 - Перенести `promt.md`/`promt_py.md` в `resources/`, собрать `tests/`, добавить `.gitignore`, `README.md`.
 - **Red:** нет (документация) — но тесты на запуск: smoke-тест `py_master.py --help`.
 - **Green:** README: установка, запуск, описание шагов 0–9, troubleshooting кодировок.
 - **Refactor:** удалить `py_in_formatter.tmp.py`, «Команда для запуска.txt» (или обновить под реальные скрипты).
 - **DoD:** новый разработчик запускает конвейер по README за 10 минут.
+
+**Итог (2026-08-17):** `promt.md`/`promt_py.md` → `resources/` (пути обновлены в
+`pipeline.ini`/`core/config.py`); добавлен `README.md` (установка, полный конвейер,
+генерация IAR, запрос к LLM, конфигурация, тесты, структура); `py_in_formatter.tmp.py`
+и «Команда для запуска.txt» исключены из репозитория; `.gitignore` дополнен
+(`.ruff_cache`, `.env.*`).
 
 ### Этап 7 — Чистый вывод без эмодзи
 - Убрать эмодзи из вывода всех скриптов (заменить на `[OK]/[WARN]/[ERROR]` — они уже есть в большинстве).

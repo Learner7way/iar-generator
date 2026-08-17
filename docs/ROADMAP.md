@@ -138,11 +138,18 @@ Selenium/pyperclip убраны из `requirements.txt`. Новых тестов
 монолитная генерация с нуля под STM32L412RB) удалён: эталоны `ewarm/` покрывают рабочий
 кейс конвейера; при необходимости — вернуть из git-истории. Новых тестов: 7. Итого 93.
 
-### Этап 5 — Конфигурация читается кодом
+### Этап 5 — Конфигурация читается кодом ✅
 - **Red:** тесты на парсер `project_config.ini` (секции PROJECT/MCU/MODULES, `%ENV_VAR%`).
 - **Green:** `core/config.py` (Pydantic Settings) или лёгкий парсер — читает реальный INI.
 - **Refactor:** заменить хардкод (`C:\temp\chrome_debug`, порт 9222, пути к chrome) на значения конфига.
 - **DoD:** запуск конвейера не требует правки кода — только INI/`.env`.
+
+**Итог (2026-08-17):** создан `core/config.py` (dataclass `PipelineConfig` на stdlib +
+`configparser(interpolation=None)`, поддержка `%ENV_VAR%`) + `pipeline.ini` (секция `[paths]`:
+output/answer/formatted/buffer/task/history/prompt/ai_config). Подключён во все скрипты конвейера:
+`py_master.py` (очистка, история, размеры, финальный отчёт), `add_prompt_to_py_out.py`,
+`pyAIData.py`, `pyIAR_xmlValue.py`, `py_in_formatter.py`, `py_in_updater.py`, `ai/ask.py`.
+Хардкод путей к файлам конвейера убран из кода. Новых тестов: 9. Итого 102.
 
 ### Этап 6 — Порядок в корне и документация
 - Перенести `promt.md`/`promt_py.md` в `resources/`, собрать `tests/`, добавить `.gitignore`, `README.md`.

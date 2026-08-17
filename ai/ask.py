@@ -20,12 +20,13 @@ from pathlib import Path
 from typing import Any, Dict
 
 from ai.backends import create_backend
+from core.config import default_config
 from utils.file_reader import read_text
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_CONFIG = SCRIPT_DIR / "ai_config.ini"
-INPUT_FILE = SCRIPT_DIR / "py_out.md"
-OUTPUT_FILE = SCRIPT_DIR / "py_in.txt"
+DEFAULT_CONFIG = default_config.ai_config
+INPUT_FILE = default_config.output_file
+OUTPUT_FILE = default_config.answer_file
 
 DEFAULT_BACKEND_CONFIG: Dict[str, Any] = {
     "type": "mock",

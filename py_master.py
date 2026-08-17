@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """
@@ -300,8 +300,7 @@ def main():
     script_add_prompt = script_dir / "add_prompt_to_py_out.py"
     script_iar_xml = script_dir / "pyIAR_xmlValue.py"
     script_ai_data = script_dir / "pyAIData.py"
-    script_start_chrome = script_dir / "start_chrome_debug.py"
-    script_ai_qesion = script_dir / "pyAIqesion.py"
+    script_ai_ask = script_dir / "ai" / "ask.py"
     script_formatter = script_dir / "py_in_formatter.py"
     script_updater = script_dir / "py_in_updater.py"
     script_iar_generator = script_dir / "iar_generator" / "master.py"
@@ -315,13 +314,12 @@ def main():
         (script_add_prompt, "add_prompt_to_py_out.py"),
         (script_iar_xml, "pyIAR_xmlValue.py"),
         (script_ai_data, "pyAIData.py"),
-        (script_ai_qesion, "pyAIqesion.py"),
+        (script_ai_ask, "ai/ask.py"),
         (script_formatter, "py_in_formatter.py"),
         (script_updater, "py_in_updater.py"),
     ]
     
     optional_scripts = [
-        (script_start_chrome, "start_chrome_debug.py"),
         (script_iar_generator, "iar_generator/master.py"),
     ]
     
@@ -424,72 +422,35 @@ def main():
         print("\n[ERROR] Остановка: pyAIData.py завершился с ошибкой")
         sys.exit(1)
     
-    # ШАГ 5: Запускаем start_chrome_debug.py (опционально)
-    if script_start_chrome.exists():
-        # Создаем временную версию без эмодзи
-        temp_script = fix_script_encoding(script_start_chrome)
-        
-        run_script(
-            str(temp_script),
-            [], 
-            5,
-            "Запуск Chrome в режиме отладки",
-            optional=True
-        )
-        
-        # Удаляем временный файл
-        if temp_script != script_start_chrome:
-            try:
-                temp_script.unlink()
-            except:
-                pass
-        
-        print("\n[WAIT] Ожидание запуска Chrome (10 секунд)...")
-        time.sleep(10)
-        
-        # Проверяем доступность порта отладки
-        if check_chrome_debug_port():
-            print("[OK] Chrome доступен для подключения")
-        else:
-            print("[WARN] Chrome не отвечает на порту 9222")
-    else:
-        print("\n[ШАГ 5] Пропускаем (start_chrome_debug.py не найден)")
+    # ШАГ 5: Запускаем ai/ask.py (запрос к LLM через бэкенд, Chrome не нужен)
+    temp_script = fix_script_encoding(script_ai_ask)
     
-    # ШАГ 6: Запускаем pyAIqesion.py
-    # Проверяем доступность Chrome перед запуском
-    if check_chrome_debug_port(timeout=5):
+    success5 = run_script(
+        str(temp_script),
+        [],
+        5,
+        "Отправка вопроса в LLM и получение ответа"
+    )
+    
+    # Удаляем временный файл
+    if temp_script != script_ai_ask:
+        try:
+            temp_script.unlink()
+        except:
+            pass
+    
+    if not success5:
+        print("\n[WARN] ШАГ 5 завершился с ошибкой, но продолжаем")
+    
+    # ШАГ 6: Запускаем py_in_formatter.py
+    if script_formatter.exists():
         # Создаем временную версию без эмодзи
-        temp_script = fix_script_encoding(script_ai_qesion)
+        temp_script = fix_script_encoding(script_formatter)
         
         success6 = run_script(
             str(temp_script),
             [],
             6,
-            "Отправка вопроса в DeepSeek и получение ответа"
-        )
-        
-        # Удаляем временный файл
-        if temp_script != script_ai_qesion:
-            try:
-                temp_script.unlink()
-            except:
-                pass
-    else:
-        print("\n[WARN] Chrome не доступен, пропускаем ШАГ 6")
-        success6 = False
-    
-    if not success6:
-        print("\n[WARN] ШАГ 6 завершился с ошибкой, но продолжаем")
-    
-    # ШАГ 7: Запускаем py_in_formatter.py
-    if script_formatter.exists():
-        # Создаем временную версию без эмодзи
-        temp_script = fix_script_encoding(script_formatter)
-        
-        success7 = run_script(
-            str(temp_script),
-            [],
-            7,
             "Форматирование ответа (упрощение)",
             optional=True
         )
@@ -501,17 +462,17 @@ def main():
             except:
                 pass
     else:
-        print("\n[ШАГ 7] Пропускаем (py_in_formatter.py не найден)")
+        print("\n[ШАГ 6] Пропускаем (py_in_formatter.py не найден)")
     
-    # ШАГ 8: Запускаем py_in_updater.py с путем к проекту
+    # ШАГ 7: Запускаем py_in_updater.py с путем к проекту
     if script_updater.exists():
         # Создаем временную версию без эмодзи
         temp_script = fix_script_encoding(script_updater)
         
-        success8 = run_script(
+        success7 = run_script(
             str(temp_script),
             [project_path],
-            8,
+            7,
             "Выполнение действий по упрощенному ответу",
             optional=True
         )
@@ -523,17 +484,17 @@ def main():
             except:
                 pass
     else:
-        print("\n[ШАГ 8] Пропускаем (py_in_updater.py не найден)")
+        print("\n[ШАГ 7] Пропускаем (py_in_updater.py не найден)")
     
-    # ШАГ 9: Запускаем iar_generator/master.py с путем к проекту
+    # ШАГ 8: Запускаем iar_generator/master.py с путем к проекту
     if script_iar_generator.exists():
         # Создаем временную версию без эмодзи
         temp_script = fix_script_encoding(script_iar_generator)
         
-        success9 = run_script(
+        success8 = run_script(
             str(temp_script),
             ["generate", project_path, "project"],
-            9,
+            8,
             "Замена проектных файлов IAR",
             optional=True
         )
@@ -545,7 +506,7 @@ def main():
             except:
                 pass
     else:
-        print("\n[ШАГ 9] Пропускаем (iar_generator/master.py не найден)")
+        print("\n[ШАГ 8] Пропускаем (iar_generator/master.py не найден)")
     
     # Сохраняем копию py_out.md в историю
     save_py_out_history()

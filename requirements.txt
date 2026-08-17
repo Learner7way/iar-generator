@@ -1,6 +1,4 @@
 # Runtime
-selenium>=4.0
-pyperclip>=1.8
 requests>=2.31
 
 # Dev / testing

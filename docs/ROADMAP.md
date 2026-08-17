@@ -114,11 +114,18 @@ iar_generator 98%, path_normalizer 98%, file_finder 82%). ruff/black чисты�
 и в `py_in_updater.py` (сравнение существующего файла теперь читает cp866/cp1251,
 а не падает на UnicodeDecodeError). Всего тестов: 73.
 
-### Этап 3 — AI-интеграция через API (вместо Selenium)
+### Этап 3 — AI-интеграция через API (вместо Selenium) ✅
 - **Red:** тесты на клиент DeepSeek API (мок HTTP): отправка `py_out.md`, получение `py_in.txt`.
 - **Green:** `ai_client.py` на `requests` (chat/completions), параметры (URL, ключ, модель) — в конфиг.
 - **Refactor:** `start_chrome_debug.py` и `pyAIqesion.py` — в архив/ (или удалить после стабилизации API).
 - **DoD:** конвейер работает без Chrome; Selenium исключён из зависимостей.
+
+**Итог (2026-08-17):** создан пакет `ai/` по образцу `rlm_agent`:
+`backend_base.py` (ABC `LLMBackend`), `backends.py` (`MockBackend` + `OpenAICompatibleBackend`
+на `requests` + фабрика `create_backend`), `ask.py` (CLI `python -m ai.ask`: py_out.md → py_in.txt).
+Конфиг — `ai_config.ini` (секция `[backend]`, env-переопределение AI_BACKEND/AI_MODEL/AI_BASE_URL/AI_API_KEY).
+`py_master.py`: шаги 5–6 (Chrome + pyAIqesion) заменены одним шагом 5 (`ai/ask.py`).
+Selenium/pyperclip убраны из `requirements.txt`. Новых тестов: 13 (мок HTTP, фабрика, конфиг, ask).
 
 ### Этап 4 — Убрать дубли генераторов IAR
 - **Red:** тесты на `iar_generator/` уже есть (Этап 1) — зафиксировать полный набор функций генерации.
